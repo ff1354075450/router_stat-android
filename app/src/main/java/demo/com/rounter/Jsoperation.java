@@ -128,7 +128,7 @@ public class Jsoperation {
     @JavascriptInterface
     public void takePhoto(String func){
         Message message = new Message();
-        message.what=2;//3
+        message.what=3;//3
         message.obj = func;
         handler.sendMessage(message);
     }

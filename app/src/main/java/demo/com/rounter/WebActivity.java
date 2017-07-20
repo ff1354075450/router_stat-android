@@ -17,6 +17,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -64,8 +66,7 @@ public class WebActivity extends Activity {
                     callBack = (String) msg.obj;
                     //开启二维码扫描
                     Log.e("qr","扫描二维码"+callBack);
-                    webView.loadUrl("javascript:"+callBack+"(1234)");
-//                    startActivityForResult(new Intent(context, CaptureActivity.class), QRCODE);
+                    startActivityForResult(new Intent(context, CaptureActivity.class), QRCODE);
                     break;
                 case 2:
                     callBack = (String) msg.obj;
@@ -101,6 +102,10 @@ public class WebActivity extends Activity {
                             JSONObject json = new JSONObject(str);
                             if (json.getInt("result") == 1) {
                                 path = json.getString("object");
+                                int  index = path.indexOf("router_upload");
+                                if(index != -1){
+                                    path = path.substring(index);
+                                }
                             }else{
                                 path="error";
                             }
@@ -128,6 +133,10 @@ public class WebActivity extends Activity {
         webSettings.setDefaultTextEncodingName("utf-8");
         webView.setHorizontalScrollBarEnabled(false);
         webView.setVerticalScrollBarEnabled(false);
+        //5.0以上 webview 需要自己同步cookie
+        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView,true);
+
         webView.setWebChromeClient(new WebChromeClient() {
             //读取html的title并显示
             @Override
@@ -180,7 +189,7 @@ public class WebActivity extends Activity {
             new Thread(){
                 @Override
                 public void run() {
-                    String result = Https.postFile(server+"router_stat/api/router/uploadImg",select);
+                    String result = Https.postFile(server+"router_stat/api/file/uploadImg",select);
                     Log.e("pic",result);
                     Message msg = new Message();
                     msg.obj = result;
@@ -194,8 +203,7 @@ public class WebActivity extends Activity {
                     new Thread(){
                         @Override
                         public void run() {
-                            String result = Https.postFile(server+"router_stat/api/router/upload",getExternalCacheDir()+"/outPutImg.jpg");
-
+                            String result = Https.postFile(server+"router_stat/api/file/uploadImg",getExternalCacheDir()+"/outPutImg.jpg");
                             Message msg = new Message();
                             msg.obj = result;
                             msg.what = 5;

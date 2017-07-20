@@ -77,7 +77,7 @@ public class GPSServer extends Service implements TencentLocationListener {
     public void onLocationChanged(TencentLocation tencentLocation, int i, String s) {
         if (TencentLocation.ERROR_OK == i) {
             // 定位成功
-            gpsinfo= tencentLocation.getLongitude() + ";;" + tencentLocation.getLatitude()  + ";;" + tencentLocation.getAddress();
+            gpsinfo= tencentLocation.getLongitude() + "::" + tencentLocation.getLatitude()  + "::" + tencentLocation.getAddress();
             Log.d("xx",gpsinfo);
         } else {
             Log.e("onLocation","locate failed");
