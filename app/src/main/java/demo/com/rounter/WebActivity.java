@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import demo.com.rounter.bean.SelectActivity;
 import demo.com.rounter.location.GPSServer;
@@ -52,7 +55,8 @@ public class WebActivity extends Activity {
     public static final int SELECT_PHOTO = 3;
     public static final int TAKE_PHOTO = 1;
     public static final int QRCODE = 4;
-    public static String server = "http://192.168.1.26:88/";
+    public static String server = "http://preroot.dotwintech.com:3088/";
+//    public static String server = "http://192.168.1.26:88/";
     private WebView webView;
     private Context context;
     private String callBack;
@@ -97,11 +101,13 @@ public class WebActivity extends Activity {
                 case 5:
                     String path=null;
                     String str = (String) msg.obj;
+                    Log.e("path",str);
                     try {
                         if(str != null) {
                             JSONObject json = new JSONObject(str);
                             if (json.getInt("result") == 1) {
                                 path = json.getString("object");
+
                                 int  index = path.indexOf("router_upload");
                                 if(index != -1){
                                     path = path.substring(index);
@@ -167,6 +173,7 @@ public class WebActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        System.exit(0);
     }
 
     public void TopBack(View view) {
@@ -216,6 +223,7 @@ public class WebActivity extends Activity {
         }
     }
 
+    private long mPressedTime = 0;
     /**
      * 点击返回，返回上一个网页
      *
@@ -223,13 +231,23 @@ public class WebActivity extends Activity {
      * @param event
      * @return
      */
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
             webView.goBack(); // 后退
             return true;
         } else {
-            this.finish();
+            long mNowTime = System.currentTimeMillis();//获取第一次按键时间
+            if((mNowTime - mPressedTime) > 2000){
+                Toast.makeText(this,"再按一次退出",Toast.LENGTH_SHORT).show();
+                mPressedTime = mNowTime;
+            }else{
+//                this.finish();
+                onDestroy();
+
+            }
             return true;
         }
     }
+
 }

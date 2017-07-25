@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import demo.com.rounter.location.GPSServer;
 
+import static android.content.Context.MODE_PRIVATE;
+
 
 public class Jsoperation {
     private Context context;
@@ -27,10 +30,12 @@ public class Jsoperation {
     private int opensize;
     private Dialog loadingDialog = null;
     private Toast toast = null;
+    private SharedPreferences sharedPreferences= null;
 
     public Jsoperation(Context context, Handler handler) {
         this.context = context;
         this.handler = handler;
+        sharedPreferences = context.getSharedPreferences("user", MODE_PRIVATE);
     }
 
     //将界面存入数组中去，方便删除
@@ -144,4 +149,27 @@ public class Jsoperation {
     public String getServerHost(){
         return WebActivity.server;
     }
+
+
+    @JavascriptInterface
+    public void setUserName(String userName){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("userName",userName);
+        editor.commit();
+    }
+    @JavascriptInterface
+    public void setPassword(String password){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("password",password);
+        editor.commit();
+    }
+    @JavascriptInterface
+    public String getUserName(){
+        return sharedPreferences.getString("userName",null);
+    }
+    @JavascriptInterface
+    public String getPassword(){
+        return sharedPreferences.getString("password",null);
+    }
+
 }
