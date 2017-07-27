@@ -101,8 +101,10 @@ public class Jsoperation {
      * 退出程序
      */
     @JavascriptInterface
-    public void myexit() {
-
+    public void myExit() {
+        setUserName(null);
+        setPassword(null);
+        ((Activity) context).finish();
     }
 
     /**
@@ -142,7 +144,13 @@ public class Jsoperation {
         Message message = new Message();
         message.what=4;
         handler.sendMessage(message);
-        return GPSServer.gpsinfo;
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.e("getGps", GPSServer.json.toString());
+        return GPSServer.json.toString();
     }
 
     @JavascriptInterface
