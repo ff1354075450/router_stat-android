@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -55,8 +56,8 @@ public class WebActivity extends Activity {
     public static final int SELECT_PHOTO = 3;
     public static final int TAKE_PHOTO = 1;
     public static final int QRCODE = 4;
-    public static String server = "http://preroot.dotwintech.com:3088/";
-//    public static String server = "http://192.168.1.26:88/";
+    //    public static String server = "http://preroot.dotwintech.com:3088/";
+    public static String server = "http://proxy.dotwintech.com:9000/";
     private WebView webView;
     private Context context;
     private String callBack;
@@ -69,7 +70,6 @@ public class WebActivity extends Activity {
                 case 1:
                     callBack = (String) msg.obj;
                     //开启二维码扫描
-                    Log.e("qr","扫描二维码"+callBack);
                     startActivityForResult(new Intent(context, CaptureActivity.class), QRCODE);
                     break;
                 case 2:
@@ -107,11 +107,6 @@ public class WebActivity extends Activity {
                             JSONObject json = new JSONObject(str);
                             if (json.getInt("result") == 1) {
                                 path = json.getString("object");
-
-                                int  index = path.indexOf("router_upload");
-                                if(index != -1){
-                                    path = path.substring(index);
-                                }
                             }else{
                                 path="error";
                             }
@@ -139,6 +134,7 @@ public class WebActivity extends Activity {
         webSettings.setDefaultTextEncodingName("utf-8");
         webView.setHorizontalScrollBarEnabled(false);
         webView.setVerticalScrollBarEnabled(false);
+        WebView.setWebContentsDebuggingEnabled(true);
         //5.0以上 webview 需要自己同步cookie
         if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView,true);
@@ -190,6 +186,7 @@ public class WebActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == QRCODE && resultCode == RESULT_OK) {  //    获取扫码的二维码中的信息
             String qrinfo = data.getStringExtra(CaptureActivity.EXTRA_RESULT);
+            Log.e("qr", "扫描二维码" + callBack + ":" + qrinfo);
             webView.loadUrl("javascript:"+callBack+"(\""+qrinfo+"\")");
         }else if(requestCode == SELECT_PHOTO && resultCode == RESULT_OK){//选择图片
             final String select = data.getStringExtra(SelectActivity.EXTRA_RESULT);
@@ -211,6 +208,7 @@ public class WebActivity extends Activity {
                         @Override
                         public void run() {
                             String result = Https.postFile(server+"router_stat/api/file/uploadImg",getExternalCacheDir()+"/outPutImg.jpg");
+                            Log.e("postimg", result);
                             Message msg = new Message();
                             msg.obj = result;
                             msg.what = 5;
@@ -249,5 +247,6 @@ public class WebActivity extends Activity {
             return true;
         }
     }
+
 
 }

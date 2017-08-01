@@ -19,9 +19,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import javax.crypto.spec.GCMParameterSpec;
+
 import demo.com.rounter.location.GPSServer;
+import demo.com.rounter.utils.GpsUtil;
 
 import static android.content.Context.MODE_PRIVATE;
+import static demo.com.rounter.location.GPSServer.json;
 
 
 public class Jsoperation {
@@ -113,7 +119,7 @@ public class Jsoperation {
      */
     @JavascriptInterface
     public void jslog(String s) {
-        Log.i("js", s);
+        Log.e("js", s);
     }
 
     @JavascriptInterface
@@ -144,13 +150,24 @@ public class Jsoperation {
         Message message = new Message();
         message.what=4;
         handler.sendMessage(message);
+//        for (int i = 0; i < 60; i++) {
+        double lon = GpsUtil.getLon();
+        double lat = GpsUtil.getLat();
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
+            if (lon == 0.0 || lat == 0.0) {
+                Thread.sleep(1000);
+            } else {
+                GPSServer.json.put("lon", lon);
+                GPSServer.json.put("lat", lat);
+                String result = GPSServer.json.toString();
+
+                return result;
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.e("getGps", GPSServer.json.toString());
-        return GPSServer.json.toString();
+//        }
+        return "timeout";
     }
 
     @JavascriptInterface
