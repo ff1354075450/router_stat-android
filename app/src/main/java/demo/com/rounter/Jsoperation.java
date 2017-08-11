@@ -27,6 +27,7 @@ import demo.com.rounter.location.GPSServer;
 import demo.com.rounter.utils.GpsUtil;
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 import static demo.com.rounter.location.GPSServer.json;
 
 
@@ -150,24 +151,24 @@ public class Jsoperation {
         Message message = new Message();
         message.what=4;
         handler.sendMessage(message);
-//        for (int i = 0; i < 60; i++) {
         double lon = GpsUtil.getLon();
         double lat = GpsUtil.getLat();
         try {
-            if (lon == 0.0 || lat == 0.0) {
-                Thread.sleep(1000);
-            } else {
+            if (lon != 0.0 && lat != 0.0) {
                 GPSServer.json.put("lon", lon);
                 GPSServer.json.put("lat", lat);
                 String result = GPSServer.json.toString();
-
+                Log.e("xx",result);
                 return result;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        }
-        return "timeout";
+        if(GPSServer.gpsStatus ==0){
+            return "gpsNotOpen";
+        }else{
+            return "timeout";
+        }
     }
 
     @JavascriptInterface

@@ -18,11 +18,6 @@ public class GpsUtil {
     private static LocationManager locationManager;
     private static double lat = 0.0, lon = 0.0;
 
-    public static boolean isOpen(Context context) {
-        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
     public static void openGps(Context context) {
         Intent gpsIntent = new Intent();
         gpsIntent.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvide");
@@ -35,13 +30,16 @@ public class GpsUtil {
         }
     }
 
-    public static void getGpsConfi() {
+    public static void getGpsConfi(Context context) {
+        if(locationManager == null){
+            locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 if (location != null) {
-                    lat = location.getLatitude();
-                    lon = location.getLongitude();
+                    setLat(location.getLatitude());
+                    setLon(location.getLongitude());
                 }
             }
 
@@ -67,12 +65,20 @@ public class GpsUtil {
         }
     }
 
-    public static double getLat() {
+    public  static void setLat(double lat1){
+        lat = lat1;
+    }
+
+    public  static  void setLon(double lon1){
+        lon = lon1;
+    }
+
+    public  static double getLat() {
         return lat;
     }
 
 
-    public static double getLon() {
+    public  static double getLon() {
         return lon;
     }
 

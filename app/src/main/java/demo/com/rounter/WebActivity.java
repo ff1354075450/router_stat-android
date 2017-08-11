@@ -1,6 +1,7 @@
 package demo.com.rounter;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,7 +18,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
@@ -43,7 +47,9 @@ import demo.com.rounter.location.GPSServer;
 import demo.com.rounter.qr.CaptureActivity;
 import demo.com.rounter.utils.Https;
 
+import static android.R.attr.animation;
 import static android.R.attr.path;
+import static demo.com.rounter.R.id.toast_img;
 import static demo.com.rounter.R.id.toptitle;
 
 
@@ -56,7 +62,7 @@ public class WebActivity extends Activity {
     public static final int SELECT_PHOTO = 3;
     public static final int TAKE_PHOTO = 1;
     public static final int QRCODE = 4;
-    //    public static String server = "http://preroot.dotwintech.com:3088/";
+//        public static String server = "http://192.168.1.155:88/";
     public static String server = "http://proxy.dotwintech.com:9000/";
     private WebView webView;
     private Context context;
@@ -145,6 +151,8 @@ public class WebActivity extends Activity {
             public void onReceivedTitle(WebView view, String title) {
                 super.onReceivedTitle(view, title);
             }
+
+
         });
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -158,6 +166,8 @@ public class WebActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
         //开启gps位置监听
         startService(new Intent(context,GPSServer.class));
+
+        progress("Progress","test");
     }
 
     @Override
@@ -194,7 +204,6 @@ public class WebActivity extends Activity {
                 @Override
                 public void run() {
                     String result = Https.postFile(server+"router_stat/api/file/uploadImg",select);
-                    Log.e("pic",result);
                     Message msg = new Message();
                     msg.obj = result;
                     msg.what = 5;
@@ -208,7 +217,9 @@ public class WebActivity extends Activity {
                         @Override
                         public void run() {
                             String result = Https.postFile(server+"router_stat/api/file/uploadImg",getExternalCacheDir()+"/outPutImg.jpg");
-                            Log.e("postimg", result);
+                            if (result == null){
+                                result = "{\"result\":0}";
+                            }
                             Message msg = new Message();
                             msg.obj = result;
                             msg.what = 5;
@@ -249,4 +260,21 @@ public class WebActivity extends Activity {
     }
 
 
+private Dialog dialog;
+    private void progress(String type,String msg){
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.toast_1,null);
+        TextView textView = (TextView) view.findViewById(R.id.toast_text);
+        ImageView imageView = (ImageView) view.findViewById(R.id.toast_img);
+        textView.setText(msg);
+        if (type.equals("Progress")){
+            dialog = new Dialog(this);
+            dialog.setCancelable(true);
+            dialog.setContentView(view);
+            imageView.setImageResource(R.drawable.loading1);
+            Animation animation = AnimationUtils.loadAnimation(this,R.anim.loading_animation);
+            imageView.startAnimation(animation);
+            dialog.show();
+        }
+    }
 }

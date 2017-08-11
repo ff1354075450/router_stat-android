@@ -23,6 +23,7 @@ import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.geolocation.TencentLocationListener;
@@ -48,6 +49,7 @@ public class GPSServer extends Service implements TencentLocationListener {
     private TelephonyManager telephonyManager = null;
     public static JSONObject json;//将要返回给网页的json数据
     private static String provider = "";
+    public static int gpsStatus = 0;//0表示gps关闭
 
     @Nullable
     @Override
@@ -94,7 +96,6 @@ public class GPSServer extends Service implements TencentLocationListener {
                 json.put("addr", tencentLocation.getAddress());
 //                json.put("lon",tencentLocation.getLongitude());
 //                json.put("lat",tencentLocation.getLatitude());
-
                 Log.d("gpsinfo", json.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -104,9 +105,18 @@ public class GPSServer extends Service implements TencentLocationListener {
         }
     }
 
+    /**
+     *
+     * @param s
+     * @param i  0表示gps关闭，1gps打开，3gps可用，gps不可用，如gps开关被关闭，gps开着但没有搜索到卫星等
+     * @param s1
+     */
     @Override
     public void onStatusUpdate(String s, int i, String s1) {
-//        Log.d("xx", "StatusUpdate:" + s + " " + i + "  " + s1);//4表示gps不可用
+        Log.d("xx",s+":"+i+":"+s1);
+        if ("gps".equals(s)){//gps信号
+            gpsStatus = i;
+        }
     }
 
 
@@ -208,16 +218,10 @@ public class GPSServer extends Service implements TencentLocationListener {
 
     public void getGps() {
         GpsUtil gpsUtil = new GpsUtil();
-        if (!gpsUtil.isOpen(this)) {
+        if (gpsStatus == 0) {//gps是关闭则打开
             gpsUtil.openGps(this);
         }
-        gpsUtil.getGpsConfi();
-        try {
-            json.put("lon", gpsUtil.getLon());
-            json.put("lat", gpsUtil.getLat());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        gpsUtil.getGpsConfi(this);
         Log.d("lon", gpsUtil.getLon() + " lat:" + gpsUtil.getLat());
 
     }
