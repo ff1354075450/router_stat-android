@@ -1,16 +1,24 @@
 package demo.com.rounter;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
@@ -24,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -62,12 +71,19 @@ public class WebActivity extends Activity {
     public static final int SELECT_PHOTO = 3;
     public static final int TAKE_PHOTO = 1;
     public static final int QRCODE = 4;
+    public static final int REQUEST_SELECT_FILE = 100;
+
 //        public static String server = "http://192.168.1.155:88/";
     public static String server = "http://proxy.dotwintech.com:9000/";
     private WebView webView;
     private Context context;
     private String callBack;
     private  Uri imageUri;
+    private long mPressedTime = 0;
+
+    private ValueCallback<Uri> mUploadMessage;// 表单的数据信息
+    private ValueCallback<Uri[]> mUploadCallbackAboveL;
+    private final static int FILECHOOSER_RESULTCODE = 10;// 表单的结果回调
 
     private Handler handler = new Handler() {
         @Override
@@ -134,16 +150,39 @@ public class WebActivity extends Activity {
         setContentView(R.layout.activity_web);
         //		初始化
         webView = (WebView) findViewById(R.id.webView1);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient());
-        webSettings.setDefaultTextEncodingName("utf-8");
+        initWebview(webView);
+        webView.loadUrl("file:///android_asset/index.html");//获取传入参数，初始化页面
+        //开启gps位置监听
+        startService(new Intent(context, GPSServer.class));
+        File file = new File("file:///android_asset/index.html");
+        Log.e("path", file.getAbsolutePath());
+    }
+
+    private void initWebview(WebView webView) {
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         webView.setHorizontalScrollBarEnabled(false);
         webView.setVerticalScrollBarEnabled(false);
-        WebView.setWebContentsDebuggingEnabled(true);
+        webView.setWebContentsDebuggingEnabled(true);
         //5.0以上 webview 需要自己同步cookie
-        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView,true);
+        webView.setOnLongClickListener(new View.OnLongClickListener() {//禁止长按复制
+            @Override
+            public boolean onLongClick(View view) {
+                return true;
+            }
+        });
+        webView.addJavascriptInterface(new Jsoperation(context, handler), "client");//提供js方法调用
+
+
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setDomStorageEnabled(true);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        settings.setLoadWithOverviewMode(true);
+        settings.setSupportZoom(true);
+        settings.setDefaultTextEncodingName("utf-8");
 
         webView.setWebChromeClient(new WebChromeClient() {
             //读取html的title并显示
@@ -152,23 +191,39 @@ public class WebActivity extends Activity {
                 super.onReceivedTitle(view, title);
             }
 
+            // For 3.0+ Devices (Start)
+            // onActivityResult attached before constructor
+            protected void openFileChooser(ValueCallback uploadMsg, String acceptType) {
+                mUploadMessage = uploadMsg;
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, FILECHOOSER_RESULTCODE);
+            }
 
-        });
-        webView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
+
+            // For Lollipop 5.0+ Devices
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+                mUploadCallbackAboveL = filePathCallback;
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, FILECHOOSER_RESULTCODE);
                 return true;
             }
-        });
-        //提供js方法调用
-        webView.addJavascriptInterface(new Jsoperation(context, handler), "client");
-        //		获取传入参数，初始化页面
-        webView.loadUrl("file:///android_asset/index.html");
-        //开启gps位置监听
-        startService(new Intent(context,GPSServer.class));
 
-        progress("Progress","test");
+            //For Android 4.1 only
+            protected void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+                mUploadMessage = uploadMsg;
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, FILECHOOSER_RESULTCODE);
+            }
+
+            protected void openFileChooser(ValueCallback<Uri> uploadMsg) {
+                mUploadMessage = uploadMsg;
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, FILECHOOSER_RESULTCODE);
+            }
+        });
     }
+
 
     @Override
     protected void onResume() {
@@ -229,10 +284,19 @@ public class WebActivity extends Activity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+        } else if (requestCode == FILECHOOSER_RESULTCODE && resultCode == RESULT_OK) {
+            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+            Uri result = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, null, null));
+            if (mUploadCallbackAboveL != null) {
+                mUploadCallbackAboveL.onReceiveValue(new Uri[]{result});
+            } else {
+                mUploadMessage.onReceiveValue(result);
+                mUploadMessage = null;
+            }
         }
     }
 
-    private long mPressedTime = 0;
+
     /**
      * 点击返回，返回上一个网页
      *
@@ -253,28 +317,33 @@ public class WebActivity extends Activity {
             }else{
 //                this.finish();
                 onDestroy();
-
             }
             return true;
         }
     }
 
 
-private Dialog dialog;
-    private void progress(String type,String msg){
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View view = inflater.inflate(R.layout.toast_1,null);
-        TextView textView = (TextView) view.findViewById(R.id.toast_text);
-        ImageView imageView = (ImageView) view.findViewById(R.id.toast_img);
-        textView.setText(msg);
-        if (type.equals("Progress")){
-            dialog = new Dialog(this);
-            dialog.setCancelable(true);
-            dialog.setContentView(view);
-            imageView.setImageResource(R.drawable.loading1);
-            Animation animation = AnimationUtils.loadAnimation(this,R.anim.loading_animation);
-            imageView.startAnimation(animation);
-            dialog.show();
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void onActivityResultAboveL(Intent intent) {
+        if (mUploadCallbackAboveL == null)
+            return;
+        Uri[] results = null;
+        if (intent != null) {
+            String dataString = intent.getDataString();
+            ClipData clipData = intent.getClipData();
+            if (clipData != null) {
+                results = new Uri[clipData.getItemCount()];
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    ClipData.Item item = clipData.getItemAt(i);
+                    results[i] = item.getUri();
+                }
+            }
+            if (dataString != null)
+                results = new Uri[]{Uri.parse(dataString)};
         }
+
+        mUploadCallbackAboveL.onReceiveValue(results);
+        mUploadCallbackAboveL = null;
     }
+
 }

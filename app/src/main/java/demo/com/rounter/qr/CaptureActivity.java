@@ -19,10 +19,8 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
-
 import demo.com.rounter.R;
 import demo.com.rounter.qr.camera.CameraManager;
 import demo.com.rounter.qr.camera.PreviewFrameShotListener;

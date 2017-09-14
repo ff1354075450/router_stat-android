@@ -82,7 +82,10 @@ public class CameraManager implements Camera.AutoFocusCallback, Camera.PreviewCa
 		List<String> flashModes = parameters.getSupportedFlashModes();
 		boolean isFlashOnAvailable = false;
 		boolean isFlashOffAvailable = false;
-		for (String flashMode : flashModes) {
+        if (flashModes == null) {
+            return false;
+        }
+        for (String flashMode : flashModes) {
 			if (Camera.Parameters.FLASH_MODE_TORCH.equals(flashMode)) {
 				isFlashOnAvailable = true;
 			}

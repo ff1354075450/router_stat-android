@@ -154,7 +154,8 @@ public class Jsoperation {
         double lon = GpsUtil.getLon();
         double lat = GpsUtil.getLat();
         try {
-            if (lon != 0.0 && lat != 0.0) {
+            String addr = json.getString("addr");
+            if (lon != 0.0 && lat != 0.0 && addr != null && !"".equals(addr)) {
                 GPSServer.json.put("lon", lon);
                 GPSServer.json.put("lat", lat);
                 String result = GPSServer.json.toString();

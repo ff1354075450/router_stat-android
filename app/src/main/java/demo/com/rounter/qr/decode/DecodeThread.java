@@ -2,6 +2,7 @@ package demo.com.rounter.qr.decode;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.google.zxing.BinaryBitmap;
@@ -11,6 +12,10 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Hashtable;
 
 public class DecodeThread extends AsyncTask<Void, Void, Result> {
@@ -27,7 +32,8 @@ public class DecodeThread extends AsyncTask<Void, Void, Result> {
 	@Override
 	protected Result doInBackground(Void... params) {
 		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(luminanceSource));
-		Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(3);
+        //设置解码的参数
+        Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(3);
 		hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
 		hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, listener);
 		MultiFormatReader multiFormatReader = new MultiFormatReader();
@@ -37,7 +43,8 @@ public class DecodeThread extends AsyncTask<Void, Void, Result> {
 		try {
 			rawResult = multiFormatReader.decodeWithState(bitmap);
 			mBitmap = luminanceSource.renderCroppedGreyScaleBitmap();
-			long end = System.currentTimeMillis();
+            saveBitmap(mBitmap);
+            long end = System.currentTimeMillis();
 			Log.d("DecodeThread", "Decode use " + (end - start) + "ms");
 		} catch (ReaderException re) {
 		} finally {
@@ -60,5 +67,23 @@ public class DecodeThread extends AsyncTask<Void, Void, Result> {
 	public void cancel() {
 		isStop = true;
 		cancel(true);
+    }
+
+    public void saveBitmap(Bitmap bitmap) {
+        File f = new File("/sdcard/", System.currentTimeMillis() + ".png");
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+            Log.i("bmp", "已经保存");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
 	}
 }
