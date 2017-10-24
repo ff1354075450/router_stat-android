@@ -40,6 +40,7 @@ public class GpsUtil {
                 if (location != null) {
                     setLat(location.getLatitude());
                     setLon(location.getLongitude());
+
                 }
             }
 
@@ -58,11 +59,11 @@ public class GpsUtil {
 
             }
         });
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null) {
-            lat = location.getLatitude();
-            lon = location.getLongitude();
-        }
+//        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//        if (location != null) {
+//            lat = location.getLatitude();
+//            lon = location.getLongitude();
+//        }
     }
 
     public  static void setLat(double lat1){

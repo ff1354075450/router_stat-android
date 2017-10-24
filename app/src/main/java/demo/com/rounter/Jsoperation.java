@@ -159,7 +159,6 @@ public class Jsoperation {
                 GPSServer.json.put("lon", lon);
                 GPSServer.json.put("lat", lat);
                 String result = GPSServer.json.toString();
-                Log.e("xx",result);
                 return result;
             }
         } catch (Exception e) {
