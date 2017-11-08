@@ -1,8 +1,5 @@
 <resources>
     <string name="app_name">路由上报</string>
-    <string name="icon1text">icon1</string>
-    <string name="icon2text">icon2</string>
-    <string name="icon3text">icon3</string>
     <string name="capture_album">album</string>
     <string name="capture_title">扫码</string>
     <string name="capture_decode_failed">获取二维码失败</string>

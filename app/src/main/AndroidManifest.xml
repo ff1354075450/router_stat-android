@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="demo.com.rounter">
+    package="com.dotwin.router_stat">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -22,38 +19,57 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-
+    <uses-permission android:name="android.permission.ACCESS_GPS" />
+    <uses-permission android:name="android.permission.ACCESS_ASSISTED_GPS" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/app"
         android:label="@string/app_name"
+        android:hardwareAccelerated="true"
         android:supportsRtl="true"
-        android:hardwareAccelerated="false"
-        android:largeHeap="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="TencentMapSDK" android:value="GWZBZ-L7AKJ-CWIF7-F54XF-PS2LF-NDBAG" />
-        <!--<activity android:name="demo.com.rounter.MainActivity">-->
-           <!---->
-        <!--</activity>-->
-
-        <activity android:name=".WebActivity">
+        <meta-data android:name="TencentMapSDK" android:value="Y7TBZ-KNHC3-7S634-YID54-BBCEQ-XVBS7" />
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".bean.SelectActivity"
-            android:label="图片选择器"/>
-        <activity
-            android:name="demo.com.rounter.qr.CaptureActivity"
+
+        <activity android:name=".qr.CaptureActivity"
             android:label="扫描二维码"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden"/>
-        <service android:name=".location.GPSServer"/>
-    </application>
 
+        <activity android:name=".tencentmap.MapActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+
+        <receiver android:name=".update.UpdateAppReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.dotwin.router_stat.fileProvider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
 </manifest>

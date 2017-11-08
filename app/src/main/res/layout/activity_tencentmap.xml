@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.dotwin.router_stat.tencentmap.MapActivity">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:background="#576ded"
+        android:layout_height="50dp">
+        <Button
+            android:background="#576ded"
+            android:id="@+id/back"
+            android:layout_width="50dp"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/sure"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_alignParentLeft="true"
+            android:layout_weight="1"
+            android:textSize="20dp"
+            android:text="返回"
+            android:onClick="clickBack"/>
+        <Button
+            android:background="#576ded"
+            android:id="@+id/sure"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="20dp"
+            android:textColor="@color/unsure"
+            android:layout_alignParentRight="true"
+            android:text="确定"
+            android:onClick="clickSure"/>
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <com.tencent.tencentmap.mapsdk.map.MapView
+            android:id="@+id/mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+        </com.tencent.tencentmap.mapsdk.map.MapView>
+        <ImageView
+            android:id="@+id/location"
+            android:layout_gravity="bottom|right"
+            android:background="@drawable/corners_bg"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:src="@drawable/location"
+            android:clickable="true"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:onClick="location"/>
+    </FrameLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycleview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:background="#ffffff"
+        android:layout_weight="1"
+        />
+
+</LinearLayout>

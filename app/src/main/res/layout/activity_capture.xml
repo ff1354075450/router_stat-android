@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <demo.com.rounter.qr.view.CaptureView
+        <com.dotwin.router_stat.qr.view.CaptureView
             android:id="@+id/cv_capture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
